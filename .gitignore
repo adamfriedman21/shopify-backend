@@ -4,5 +4,8 @@
 # Ignore Node.js dependencies
 node_modules/
 
+# Ignore environment variables file (keep this local!)
+.env
 
-
+# Ignore backup files (like your ecosystem config backups)
+*.js.save

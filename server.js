@@ -29,7 +29,7 @@ app.get("/", (req, res) => {
 // Shopify Webhook Handler
 app.post('/shopify-webhook', async (req, res) => {
   console.log("📩 Incoming Shopify Webhook:", req.body);
-  
+
   if (!req.body || !req.body.id) {
     return res.status(400).send("❌ Invalid Shopify Webhook Payload");
   }
@@ -43,22 +43,26 @@ app.post('/shopify-webhook', async (req, res) => {
       },
       body: JSON.stringify({
         id: req.body.id,
-        vendor_id: "123e4567-e89b-12d3-a456-426614174000",
         raw_payload: req.body
       })
     });
 
     if (!response.ok) {
+      // Attempt to read error details from the response body
+      const errorText = await response.text();
+      console.error("❌ Supabase Error:", response.status, response.statusText, errorText);
       throw new Error(`❌ Supabase Error: ${response.statusText}`);
     }
 
     console.log("✅ Shopify Order Stored Successfully");
     res.status(200).send("✅ Shopify Order Stored.");
   } catch (error) {
-    console.error("❌ Error Processing Shopify Webhook:", error.message);
+    // Log the full error object for extra context
+    console.error("❌ Error Processing Shopify Webhook:", error);
     res.status(500).send("❌ Internal Server Error");
   }
 });
+
 
 // Log registered routes for debugging
 console.log("📌 Registered Routes:");
