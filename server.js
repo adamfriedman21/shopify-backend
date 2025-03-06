@@ -1,12 +1,14 @@
-console.log("SUPABASE_URL:", process.env.SUPABASE_URL);
-
-import 'dotenv/config'; // Load environment variables
+import 'dotenv/config'; // ✅ Correct way to load environment variables
 import express from 'express';
 import fetch from 'node-fetch';
 
 const app = express();
 app.use(express.json());
 
+// ✅ Debugging: Print environment variables in Railway logs
+console.log("🚀 SUPABASE_URL from Railway:", process.env.SUPABASE_URL);
+console.log("🚀 SUPABASE_KEY from Railway:", process.env.SUPABASE_KEY);
+console.log("🚀 Full Environment Variables:", process.env);
 
 // 🛒 Shopify Webhook
 app.post('/shopify-webhook', async (req, res) => {
@@ -29,5 +31,5 @@ app.post('/shopify-webhook', async (req, res) => {
 });
 
 // 🌍 Start the Server
-const PORT = process.env.PORT ||  8080; // ✅ Ensure it uses Railway's port
+const PORT = process.env.PORT || 8080;
 app.listen(PORT, () => console.log(`Backend running on port ${PORT}`));
