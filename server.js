@@ -39,6 +39,7 @@ app.post('/shopify-webhook', async (req, res) => {
       method: 'POST',
       headers: {
         "apikey": process.env.SUPABASE_KEY,
+        "Authorization": `Bearer ${process.env.SUPABASE_KEY}`,
         "Content-Type": "application/json"
       },
       body: JSON.stringify({
@@ -46,6 +47,7 @@ app.post('/shopify-webhook', async (req, res) => {
         raw_payload: req.body
       })
     });
+    
 
     if (!response.ok) {
       // Attempt to read error details from the response body
