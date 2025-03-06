@@ -1,35 +1,73 @@
-import 'dotenv/config'; // ✅ Correct way to load environment variables
+import 'dotenv/config'; // Load environment variables
 import express from 'express';
 import fetch from 'node-fetch';
 
 const app = express();
-app.use(express.json());
+app.use(express.json()); // Parse JSON bodies
 
-// ✅ Debugging: Print environment variables in Railway logs
-console.log("🚀 SUPABASE_URL from Railway:", process.env.SUPABASE_URL);
-console.log("🚀 SUPABASE_KEY from Railway:", process.env.SUPABASE_KEY);
-console.log("🚀 Full Environment Variables:", process.env);
-
-// 🛒 Shopify Webhook
-app.post('/shopify-webhook', async (req, res) => {
-    const order = req.body;
-
-    await fetch(`${process.env.SUPABASE_URL}/rest/v1/shopify_orders`, {
-        method: 'POST',
-        headers: {
-            "apikey": process.env.SUPABASE_KEY,
-            "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-            id: order.id,
-            vendor_id: "123e4567-e89b-12d3-a456-426614174000",
-            raw_payload: order
-        })
-    });
-
-    res.status(200).send("Shopify Order Stored.");
+// Log incoming requests for debugging
+app.use((req, res, next) => {
+  console.log(`➡️  Incoming Request: ${req.method} ${req.url}`);
+  next();
 });
 
-// 🌍 Start the Server
+// Debug: Print environment variables
+console.log("🚀 SUPABASE_URL from .env:", process.env.SUPABASE_URL || "❌ MISSING");
+console.log("🚀 SUPABASE_KEY from .env:", process.env.SUPABASE_KEY ? "✅ Loaded" : "❌ MISSING");
+
+// Ensure essential environment variables are set
+if (!process.env.SUPABASE_URL || !process.env.SUPABASE_KEY) {
+  console.error("❌ Missing SUPABASE_URL or SUPABASE_KEY. Check your .env file.");
+  process.exit(1);
+}
+
+// Root route to handle GET /
+app.get("/", (req, res) => {
+  res.send("🚀 Shopify Backend is Running!");
+});
+
+// Shopify Webhook Handler
+app.post('/shopify-webhook', async (req, res) => {
+  console.log("📩 Incoming Shopify Webhook:", req.body);
+  
+  if (!req.body || !req.body.id) {
+    return res.status(400).send("❌ Invalid Shopify Webhook Payload");
+  }
+
+  try {
+    const response = await fetch(`${process.env.SUPABASE_URL}/rest/v1/shopify_orders`, {
+      method: 'POST',
+      headers: {
+        "apikey": process.env.SUPABASE_KEY,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        id: req.body.id,
+        vendor_id: "123e4567-e89b-12d3-a456-426614174000",
+        raw_payload: req.body
+      })
+    });
+
+    if (!response.ok) {
+      throw new Error(`❌ Supabase Error: ${response.statusText}`);
+    }
+
+    console.log("✅ Shopify Order Stored Successfully");
+    res.status(200).send("✅ Shopify Order Stored.");
+  } catch (error) {
+    console.error("❌ Error Processing Shopify Webhook:", error.message);
+    res.status(500).send("❌ Internal Server Error");
+  }
+});
+
+// Log registered routes for debugging
+console.log("📌 Registered Routes:");
+app._router.stack.forEach((r) => {
+  if (r.route && r.route.path) {
+    console.log(`➡️ ${r.route.path}`);
+  }
+});
+
+// Start the server on port from environment variable (or default 8080)
 const PORT = process.env.PORT || 8080;
-app.listen(PORT, () => console.log(`Backend running on port ${PORT}`));
+app.listen(PORT, '0.0.0.0', () => console.log(`🚀 Backend running on port ${PORT}`));
