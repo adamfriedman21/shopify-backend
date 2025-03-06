@@ -5,6 +5,10 @@ import fetch from 'node-fetch';
 const app = express();
 app.use(express.json());
 
+// Set the port correctly for Railway
+const PORT = process.env.PORT || 8080; // ✅ Ensure it uses Railway's port
+app.listen(PORT, () => console.log(`Backend running on port ${PORT}`));
+
 // 🛒 Shopify Webhook
 app.post('/shopify-webhook', async (req, res) => {
     const order = req.body;
