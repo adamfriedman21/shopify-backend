@@ -9,3 +9,7 @@ node_modules/
 
 # Ignore backup files (like your ecosystem config backups)
 *.js.save
+
+# Ignore SSH keys
+key
+key.pub
