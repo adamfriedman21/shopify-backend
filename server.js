@@ -1,3 +1,5 @@
+console.log("SUPABASE_URL:", process.env.SUPABASE_URL);
+
 import 'dotenv/config'; // Load environment variables
 import express from 'express';
 import fetch from 'node-fetch';
